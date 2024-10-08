@@ -1,140 +1,135 @@
 const db = require("../models");
 
-// The below code is only for development stage
-// To add some default items in our DB (Campaign collection) and check the api
-const item1 = new db.Campaign({
-  title: "test1",
+// This code is used for development purposes to add default events for IIIT Bhagalpur Robotics Club (Event collection) and check the API functionality
+const event1 = new db.Event({
+  title: "Robot Showcase",
   description:
-    "test1dloren jhbvsd  bjbdsv chjb cdbhb bsdcb nb hg asnb hj  asbhbsjhbjhhjaxvhgbcas  hg.sahgvbcshgnbsa ghcsab hjasbjhabs  asbjh sx hahs bscjh",
+    "This event showcases the latest robot designs developed by the IIIT Bhagalpur Robotics Club members. Visitors will be able to see and learn about various projects and innovations.",
   imageUrl:
-    "https://image.shutterstock.com/image-photo/bright-spring-view-cameo-island-260nw-1048185397.jpg",
+    "https://image.shutterstock.com/image-photo/robotics-competition-260nw-123456789.jpg",
+  required: 200,
+  start: "2023-12-22T11:18:54.919Z",
+});
+
+const event2 = new db.Event({
+  title: "Workshop on Drones",
+  description:
+    "A hands-on workshop focused on building and programming drones. Participants will learn the basics of drone assembly and flight control.",
+  imageUrl:
+    "https://image.shutterstock.com/image-photo/drone-workshop-260nw-123456789.jpg",
+  required: 150,
+  start: "2023-12-20T11:18:54.919Z",
+});
+
+const event3 = new db.Event({
+  title: "Robotics Hackathon",
+  description:
+    "An exciting hackathon where participants will work in teams to design and build robots capable of performing specific tasks. This event is aimed at fostering innovation and problem-solving skills.",
+  imageUrl:
+    "https://image.shutterstock.com/image-photo/robotics-hackathon-260nw-123456789.jpg",
   required: 500,
-  start: "2020-12-22T11:18:54.919Z",
+  start: "2023-12-19T11:18:54.919Z",
 });
 
-const item2 = new db.Campaign({
-  title: "test2",
+const event4 = new db.Event({
+  title: "AI & Robotics Conference",
   description:
-    "test2dloren jhbvsd  bjbdsv chjb cdbhb bsdcb nb hg asnb hj  asbhbsjhbjhhjaxvhgbcas  hg.sahgvbcshgnbsa ghcsab hjasbjhabs  asbjh sx hahs bscjh",
+    "This conference will bring together experts in AI and Robotics to discuss the latest trends and research in the field. It will include keynote speakers, panel discussions, and poster presentations.",
   imageUrl:
-    "https://image.shutterstock.com/image-photo/bright-spring-view-cameo-island-260nw-1048185397.jpg",
-  required: 100,
-  start: "2020-12-20T11:18:54.919Z",
+    "https://image.shutterstock.com/image-photo/ai-robotics-conference-260nw-123456789.jpg",
+  required: 1000,
+  start: "2023-12-22T11:19:54.919Z",
 });
 
-const item3 = new db.Campaign({
-  title: "test3",
-  description:
-    "test3dloren jhbvsd  bjbdsv chjb cdbhb bsdcb nb hg asnb hj  asbhbsjhbjhhjaxvhgbcas  hg.sahgvbcshgnbsa ghcsab hjasbjhabs  asbjh sx hahs bscjh",
-  imageUrl:
-    "https://image.shutterstock.com/image-photo/bright-spring-view-cameo-island-260nw-1048185397.jpg",
-  required: 5000,
-  start: "2020-12-19T11:18:54.919Z",
-});
+const defaultEvents = [event1, event2, event3, event4];
 
-const item4 = new db.Campaign({
-  title: "test4",
-  description:
-    "test4dloren jhbvsd  bjbdsv chjb cdbhb bsdcb nb hg asnb hj  asbhbsjhbjhhjaxvhgbcas  hg.sahgvbcshgnbsa ghcsab hjasbjhabs  asbjh sx hahs bscjh",
-  imageUrl:
-    "https://image.shutterstock.com/image-photo/bright-spring-view-cameo-island-260nw-1048185397.jpg",
-  required: 50000,
-  start: "2020-12-22T11:19:54.919Z",
-});
-
-const defaultItems = [item1, item2, item3, item4];
-
-db.Campaign.find().exec(function (err, results) {
+// Check if there are any existing events, if not, insert the default events
+db.Event.find().exec(function (err, results) {
   var count = results.length;
 
   if (count == 0) {
-    db.Campaign.insertMany(defaultItems, function (err) {
+    db.Event.insertMany(defaultEvents, function (err) {
       if (err) {
         console.log(err);
       } else {
         console.log(
-          "Successfully added default items to Campaign collection in DB"
+          "Successfully added default events to the Event collection in DB"
         );
       }
     });
   }
 });
-// Till here ----------------------------------------------------------------------------------
 
-function hideTransactionID(donors) {
+// Function to anonymize transaction IDs of sponsors
+function hideTransactionID(sponsors) {
   var i, j;
   text = "";
 
-  for (i = 0; i < donors.length; i++) {
-    var S = donors[i].transactionID;
+  for (i = 0; i < sponsors.length; i++) {
+    var S = sponsors[i].transactionID;
     text = "";
     for (j = 0; j < S.length; j++) {
       if (j > 3 && j < S.length - 3) text = text + "X";
       else text = text + S[j];
     }
 
-    donors[i].transactionID = text;
+    sponsors[i].transactionID = text;
   }
 
   return;
 }
 
+// Show details of a specific event by its ID
 const show = async (req, res) => {
   try {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-      let showCampaign = await db.Campaign.findById(req.params.id);
+      let showEvent = await db.Event.findById(req.params.id);
 
-      if (showCampaign) {
-        hideTransactionID(showCampaign.donors);
+      if (showEvent) {
+        hideTransactionID(showEvent.sponsors);
 
-        res.status(200).json(showCampaign);
+        res.status(200).json(showEvent);
       } else {
-        // console.log("Invalid Campaign Id.");
         res.status(404).json({
-          message: "Page Not Found",
+          message: "Event Not Found",
         });
       }
     } else {
-      // console.log("Invalid Campaign Id.");
       res.status(404).json({
-        message: "Page Not Found.",
+        message: "Invalid Event ID",
       });
     }
   } catch (err) {
     console.log("Server error.");
     return res.status(500).json({
-      message: "Something wrong when getting the campaign",
+      message: "Something went wrong when retrieving the event",
     });
   }
 };
 
+// Show details of all events, sorted by start date in descending order
 const showAll = async (req, res) => {
-  //console.log("success");
   try {
-    // Add this code in CreateCampaign Route during production
-    // To sort campaign in descending order of dates
-    await db.Campaign.find({})
+    await db.Event.find({})
       .sort({ start: -1 })
-      .exec(function (err, allCampaign) {
+      .exec(function (err, allEvents) {
         if (err) console.log(err);
         else {
-          //console.log("Sorted");
-
-          var len = allCampaign.length;
+          var len = allEvents.length;
 
           var i;
           for (i = 0; i < len; i++) {
-            let currCampaign = allCampaign[i];
-            hideTransactionID(currCampaign.donors);
+            let currEvent = allEvents[i];
+            hideTransactionID(currEvent.sponsors);
           }
 
-          res.status(200).json(allCampaign);
+          res.status(200).json(allEvents);
         }
       });
   } catch (err) {
     console.log("Server error.");
     return res.status(500).json({
-      message: "Something went wrong when trying to get all campaign",
+      message: "Something went wrong when retrieving all events",
     });
   }
 };
